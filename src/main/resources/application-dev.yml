@@ -14,19 +14,18 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   mail:
-    host: localhost
-    port: 1025
-    username: hobbes
-    password: hobbes
+    host: smtp.gmail.com
+    username: hobbes.theproject@gmail.com
+    password: aifz vmcx hvbi qgim
+    port: 587
     properties:
-      mail:
-        smtp:
-          trust: "*"
+      smtp:
         auth: true
+        connectiontimeout: 5000
         starttls:
           enable: true
-        connectiontimeout: 5000
-        timeout: 3000
+          required: true
+        timeout: 5000
         writetimeout: 5000
 
 application:
