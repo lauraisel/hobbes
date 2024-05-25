@@ -1,12 +1,15 @@
 package hr.algebra.hobbes.service;
 
 import hr.algebra.hobbes.dto.RegistrationRequestDto;
+import hr.algebra.hobbes.enums.EmailTemplateNameEnum;
 import hr.algebra.hobbes.model.Token;
 import hr.algebra.hobbes.model.User;
 import hr.algebra.hobbes.repository.RoleRepository;
 import hr.algebra.hobbes.repository.TokenRepository;
 import hr.algebra.hobbes.repository.UserRepository;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +27,10 @@ public class AuthenticationService {
     private final TokenRepository tokenRepository;
     private final EmailService emailService;
 
+    @Value("${application.mailing.frontend.activation-url}")
+    private String activationUrl;
 
-    public void register(RegistrationRequestDto request) {
+    public void register(RegistrationRequestDto request) throws MessagingException {
         var userRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new IllegalStateException("User role not found"));
         var user = User.builder()
@@ -40,9 +45,17 @@ public class AuthenticationService {
         sendValidationEmail(user);
     }
 
-    private void sendValidationEmail(User user) {
+    private void sendValidationEmail(User user) throws MessagingException {
         var newToken = generateAndSaveActivationToken(user);
-        //send mail
+
+        emailService.sendEmail(
+                user.getEmail(),
+                user.getUsername(),
+                EmailTemplateNameEnum.ACTIVATE_ACCOUNT,
+                activationUrl,
+                newToken,
+                "Account activation"
+        );
     }
 
     private String generateAndSaveActivationToken(User user) {
