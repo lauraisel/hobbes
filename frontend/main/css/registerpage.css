@@ -1,19 +1,10 @@
 body {
-  font-family: sans-serif;
-  background: #03001e;
-  background: -webkit-linear-gradient(
-    to right,
-    #df8f27,
-    #ab0b0b,
-    #df8f27
-  ); 
-  background: linear-gradient(
-    to right,
-    #df8f27,
-    #ab0b0b,
-    #df8f27
-  ); 
-  color: whitesmoke;
+  background: rgb(59, 76, 202);
+  background: radial-gradient(
+    circle,
+    rgba(59, 76, 202, 1) 48%,
+    rgba(145, 107, 224, 1) 82%
+  );
 }
 
 h1 {

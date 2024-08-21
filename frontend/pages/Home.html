@@ -11,14 +11,261 @@
     ></script>
     <script type="module" src="../main/js/nav.js"></script>
 
-   
+    <style>
+      /* Centering the image and welcome box */
+      .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 50%;
+      }
+
+      .welcome-box {
+        background-color: #64b5f6;
+        color: #000;
+        padding: 20px;
+        border-radius: 10px;
+        width: 50%;
+        text-align: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* Styling the Daily Reward button */
+      .daily-reward {
+        position: absolute;
+        top: 20%;
+        right: 10%;
+        text-align: center;
+      }
+
+      .daily-reward button {
+        background-color: #ffcc00;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #000;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .daily-reward button img {
+        width: 30px;
+        height: auto;
+        margin-right: 10px;
+      }
+
+      .daily-reward button:hover {
+        background-color: #e6b800;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+      }
+
+      .modal-content {
+        background-color: #BFDCFA;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        border-radius: 10px;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .pokemon-card {
+        background-color: white;
+        display: inline-block;
+        width: 150px;
+        margin: 10px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .pokemon-card img {
+        width: 100px;
+        height: 100px;
+      }
+
+      .pokemon-card h3 {
+        font-size: 16px;
+        margin: 10px 0;
+      }
+
+      .pokemon-card p {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .collect-btn {
+        background-color: #28a745;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 20px 0;
+        cursor: pointer;
+        border-radius: 5px;
+        width: 100%;
+      }
+
+      .collect-btn:hover {
+        background-color: #218838;
+      }
+    </style>
   </head>
   <div id="navbar"></div>
   <body>
+    <img
+      src="../images/All_Starter_Pokémon.webp"
+      width="40%"
+      height="40%"
+      class="center"
+    />
+    <div class="welcome-box">
+      Welcome to the Ultimate Pokémon Trading Hub! Dive into a vibrant community
+      of trainers where you can trade and collect your favorite Pokémon. Start
+      your journey today and complete your Pokédex by connecting with trainers
+      from around the globe. Whether you're searching for rare Pokémon or
+      looking to trade your extras, our platform makes it easy and fun. Join us
+      now and be part of the Pokémon trading revolution!
+    </div>
+    <div class="daily-reward">
+      <button id="dailyRewardBtn">
+        <img
+          src="../images/Gift-box-white-illustration-transparent-PNG.png"
+          alt="Daily Reward Icon"
+        />
+        Daily Reward
+      </button>
+    </div>
 
-   
-  
+    <!-- The Modal -->
+    <div id="dailyRewardModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Your Daily Pokémon Rewards</h2>
+        <div id="pokemonCardsContainer">
+          <!-- Pokémon cards will be injected here -->
+        </div>
+        <button id="collectBtn" class="collect-btn">Collect</button>
+      </div>
+    </div>
 
-   
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("dailyRewardModal");
+        const btn = document.getElementById("dailyRewardBtn");
+        const span = document.getElementsByClassName("close")[0];
+        const collectBtn = document.getElementById("collectBtn");
+
+        // When the user clicks the button, open the modal and fetch Pokémon
+        btn.onclick = function () {
+          modal.style.display = "block";
+          displayPokemon();
+        };
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+          modal.style.display = "none";
+        };
+
+        // When the user clicks on "Collect", close the modal
+        collectBtn.onclick = function () {
+          modal.style.display = "none";
+        };
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        };
+
+        function getRandomPokemon() {
+          const promises = [];
+          for (let i = 0; i < 6; i++) {
+            const randomId = Math.floor(Math.random() * 898) + 1; // Random Pokémon ID
+            promises.push(
+              fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`).then(
+                (response) => response.json()
+              )
+            );
+          }
+
+          return Promise.all(promises);
+        }
+
+        function displayPokemon() {
+          const storedPokemon = localStorage.getItem("dailyPokemon");
+
+          if (storedPokemon) {
+            // If Pokémon are already stored, use them
+            const pokemonList = JSON.parse(storedPokemon);
+            renderPokemonCards(pokemonList);
+          } else {
+            // Otherwise, fetch new Pokémon and store them
+            getRandomPokemon().then((results) => {
+              localStorage.setItem("dailyPokemon", JSON.stringify(results));
+              renderPokemonCards(results);
+            });
+          }
+        }
+
+        function renderPokemonCards(pokemonList) {
+          const pokemonCardsContainer = document.getElementById(
+            "pokemonCardsContainer"
+          );
+          pokemonCardsContainer.innerHTML = ""; // Clear previous content
+
+          pokemonList.forEach((pokemon) => {
+            const pokemonCard = document.createElement("div");
+            pokemonCard.className = "pokemon-card";
+            pokemonCard.innerHTML = `
+          <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+          <h3>${pokemon.name}</h3>
+          <p>Level: ${pokemon.base_experience}</p>
+        `;
+            pokemonCardsContainer.appendChild(pokemonCard);
+          });
+        }
+      });
+    </script>
   </body>
 </html>
