@@ -19,7 +19,7 @@
           <li class="nav-item"><a href="Trade.html">Trade</a></li>
           <li class="nav-item"><a href="Whishlist.html">Whishlist</a></li>
           <li class="nav-item"><a href="MyPokemon.html">MyPokemon</a></li>
-          <li class="nav-item"><a onclick="logout()" href="Home.html">Log out</a></li>
+          <li class="nav-item"><a onclick="logout()" href="#">Log out</a></li>
      
       </ul>
       <!--it changes from three lines into an X-->
@@ -35,7 +35,14 @@
   <script>
     /*this function removes token from the user when he/she is logged out*/
     function logout(){
-        localStorage.removeItem("token");
+        //localStorage.removeItem("token");
+        
+    localStorage.removeItem("loggedInUser"); // Remove the logged-in user info
+    localStorage.removeItem("token"); // Optional: remove token if used
+
+    // Optionally, redirect to login page or refresh the page
+    window.location.href = "login.html"; // Redirect to login page
+
     }
 
     /*this part changes three lines into X */

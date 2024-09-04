@@ -190,82 +190,154 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const modal = document.getElementById("dailyRewardModal");
-        const btn = document.getElementById("dailyRewardBtn");
-        const span = document.getElementsByClassName("close")[0];
-        const collectBtn = document.getElementById("collectBtn");
+      const modal = document.getElementById("dailyRewardModal");
+      const btn = document.getElementById("dailyRewardBtn");
+      const span = document.getElementsByClassName("close")[0];
+      const collectBtn = document.getElementById("collectBtn");
+      const dailyRewardWrapper = document.getElementById("dailyRewardWrapper");
 
-        // When the user clicks the button, open the modal and fetch Pokémon
-        btn.onclick = function () {
-          modal.style.display = "block";
-          displayPokemon();
-        };
-
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function () {
-          modal.style.display = "none";
-        };
-
-        // When the user clicks on "Collect", close the modal
-        collectBtn.onclick = function () {
-          modal.style.display = "none";
-        };
-
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function (event) {
-          if (event.target == modal) {
-            modal.style.display = "none";
-          }
-        };
-
-        function getRandomPokemon() {
-          const promises = [];
-          for (let i = 0; i < 6; i++) {
-            const randomId = Math.floor(Math.random() * 898) + 1; // Random Pokémon ID
-            promises.push(
-              fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`).then(
-                (response) => response.json()
-              )
-            );
-          }
-
-          return Promise.all(promises);
+      function checkUserLogin() {
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedInUser) {
+          dailyRewardWrapper.style.display = "none";
+          return false;
         }
+        return true;
+      }
 
-        function displayPokemon() {
-          const storedPokemon = localStorage.getItem("dailyPokemon");
+      function getLastRewardTime() {
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedInUser) return 0;
 
-          if (storedPokemon) {
-            // If Pokémon are already stored, use them
-            const pokemonList = JSON.parse(storedPokemon);
-            renderPokemonCards(pokemonList);
-          } else {
-            // Otherwise, fetch new Pokémon and store them
-            getRandomPokemon().then((results) => {
-              localStorage.setItem("dailyPokemon", JSON.stringify(results));
-              renderPokemonCards(results);
-            });
-          }
+        const userData = JSON.parse(localStorage.getItem("usersData")) || {};
+        return userData[loggedInUser.username]?.lastRewardTime || 0;
+      }
+
+      function setLastRewardTime() {
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedInUser) return;
+
+        let usersData = JSON.parse(localStorage.getItem("usersData")) || {};
+        if (!usersData[loggedInUser.username]) {
+          usersData[loggedInUser.username] = {};
         }
+        usersData[loggedInUser.username].lastRewardTime = Date.now();
+        localStorage.setItem("usersData", JSON.stringify(usersData));
+      }
 
-        function renderPokemonCards(pokemonList) {
-          const pokemonCardsContainer = document.getElementById(
-            "pokemonCardsContainer"
-          );
-          pokemonCardsContainer.innerHTML = ""; // Clear previous content
+      function canCollectReward() {
+        const lastRewardTime = getLastRewardTime();
+        const currentTime = Date.now();
+        const cooldown = 60 * 1000; // 1 minute cooldown
+        return currentTime - lastRewardTime >= cooldown;
+      }
 
-          pokemonList.forEach((pokemon) => {
-            const pokemonCard = document.createElement("div");
-            pokemonCard.className = "pokemon-card";
-            pokemonCard.innerHTML = `
-          <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
-          <h3>${pokemon.name}</h3>
-          <p>Level: ${pokemon.base_experience}</p>
-        `;
-            pokemonCardsContainer.appendChild(pokemonCard);
+      function displayPokemon() {
+        const storedPokemon = localStorage.getItem("dailyPokemon");
+
+        if (storedPokemon) {
+          // If Pokémon are already stored, use them
+          const pokemonList = JSON.parse(storedPokemon);
+          renderPokemonCards(pokemonList);
+        } else {
+          // Otherwise, fetch new Pokémon and store them
+          getRandomPokemon().then((results) => {
+            localStorage.setItem("dailyPokemon", JSON.stringify(results));
+            renderPokemonCards(results);
           });
         }
-      });
+      }
+
+      function renderPokemonCards(pokemonList) {
+        const pokemonCardsContainer = document.getElementById("pokemonCardsContainer");
+        pokemonCardsContainer.innerHTML = ""; // Clear previous content
+
+        pokemonList.forEach((pokemon) => {
+          const pokemonCard = document.createElement("div");
+          pokemonCard.className = "pokemon-card";
+          pokemonCard.innerHTML = `
+            <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+            <h3>${pokemon.name}</h3>
+            <p>Level: ${pokemon.base_experience}</p>
+          `;
+          pokemonCardsContainer.appendChild(pokemonCard);
+        });
+      }
+
+      async function getRandomPokemon() {
+        const promises = [];
+        for (let i = 0; i < 6; i++) {
+          const randomId = Math.floor(Math.random() * 898) + 1; // Random Pokémon ID
+          promises.push(fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`).then(response => response.json()));
+        }
+
+        return Promise.all(promises);
+      }
+
+      function savePokemonForUser() {
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+        if (!loggedInUser) {
+          alert("No user is logged in. Please log in first.");
+          return;
+        }
+
+        const storedPokemon = localStorage.getItem("dailyPokemon");
+        if (storedPokemon) {
+          const pokemonList = JSON.parse(storedPokemon);
+          const collectedPokemonIds = pokemonList.map((pokemon) => pokemon.id);
+
+          let usersData = JSON.parse(localStorage.getItem("usersData")) || {};
+
+          if (!usersData[loggedInUser.username]) {
+            usersData[loggedInUser.username] = {
+              collectedPokemon: [],
+            };
+          }
+
+          // Add collected Pokémon IDs to the user's data
+          usersData[loggedInUser.username].collectedPokemon.push(...collectedPokemonIds);
+
+          // Save updated data back to local storage
+          localStorage.setItem("usersData", JSON.stringify(usersData));
+
+          // Clear the daily Pokémon from local storage to prevent collecting again
+          localStorage.removeItem("dailyPokemon");
+
+          // Update last reward time
+          setLastRewardTime();
+
+          alert("Pokémon collected successfully!");
+        }
+      }
+
+      btn.onclick = function () {
+        if (canCollectReward()) {
+          modal.style.display = "block";
+          displayPokemon();
+        } else {
+          alert("You need to wait before collecting the daily reward again.");
+        }
+      };
+
+      span.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      collectBtn.onclick = function () {
+        savePokemonForUser();
+        modal.style.display = "none";
+      };
+
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      // Initial check to display the button if the user is logged in
+      checkUserLogin();
+    });
     </script>
   </body>
 </html>
