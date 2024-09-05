@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="../main/js/nav.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #bfdcfa;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #pokemon-search {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .slideshow-container {
+      position: relative;
+      max-width: 300px;
+      margin: auto;
+    }
+
+    .pokemon-slide {
+      display: none;
+    }
+
+    .pokemon-slide.active {
+      display: block;
+    }
+
+    .pokemon-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin: 10px;
+      text-align: center;
+      transition: transform 0.3s ease-in-out;
+      cursor: pointer;
+    }
+
+    .pokemon-card img {
+      width: 100px;
+      height: 100px;
+    }
+
+    .pokemon-card h2 {
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
+    .prev,
+    .next {
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      width: auto;
+      padding: 16px;
+      margin-top: -22px;
+      color: red;
+      font-weight: bold;
+      font-size: 18px;
+      transition: 0.6s ease;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .next {
+      right: 0;
+      border-radius: 50%;
+    }
+
+    .prev {
+      left: 0;
+      border-radius: 50%;
+    }
+
+    .prev:hover,
+    .next:hover {
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .trade-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .trade-button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.4);
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .pokemon-details img {
+      width: 150px;
+      height: 150px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .pokemon-details h2 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .pokemon-details p {
+      margin: 10px 0;
+    }
+
+    .pokemon-stats {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+
+    .pokemon-stats div {
+      width: 45%;
+      margin: 5px 0;
+    }
+
+    .stats-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+  <h1>Pokémon Trading Platform</h1>
+  <input type="text" id="pokemon-search" placeholder="Search for Pokémon..." />
+  <div class="slideshow-container" id="pokemon-info"></div>
+  <a class="prev" onclick="changeSlide(-1)">&#10094;</a>
+  <a class="next" onclick="changeSlide(1)">&#10095;</a>
+
+  <!-- The Modal -->
+  <div id="pokemonModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div class="pokemon-details">
+        <img id="pokemon-img" src="" alt="" />
+        <h2 id="pokemon-name"></h2>
+        <div id="stats-content">
+          <p><strong>Type:</strong> <span id="pokemon-type"></span></p>
+          <p><strong>Base Experience:</strong> <span id="pokemon-level"></span></p>
+          <p><strong>Held Items:</strong> <span id="pokemon-items"></span></p>
+          <p><strong>Moves:</strong> <span id="pokemon-moves"></span></p>
+          <div class="pokemon-stats"></div>
+        </div>
+        <div id="trade-content" style="display: none">
+          <h3>Trade Requirements</h3>
+          <p><strong>Required Pokémon:</strong> <span id="required-pokemon-name"></span></p>
+          <img id="required-pokemon-img" src="" alt="Required Pokémon" style="width: 100px; height: 100px" />
+          <button id="confirm-trade" class="trade-button">Confirm Trade</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const pokemonSearch = document.getElementById("pokemon-search");
+      const pokemonInfo = document.getElementById("pokemon-info");
+      const modal = document.getElementById("pokemonModal");
+      const span = document.getElementsByClassName("close")[0];
+      const requiredPokemonNameElem = document.getElementById("required-pokemon-name");
+      const requiredPokemonImgElem = document.getElementById("required-pokemon-img");
+      const confirmTradeBtn = document.getElementById("confirm-trade");
+      let allPokemon = [];
+      let currentSlideIndex = 0;
+      let currentPokemon = null; // To store the currently selected Pokémon
+
+      // Fetch all Pokémon names on page load
+      async function fetchAllPokemon() {
+        try {
+          const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
+          const data = await response.json();
+          allPokemon = data.results.map((pokemon) => pokemon.name);
+        } catch (error) {
+          console.error("Error fetching Pokémon data:", error);
+        }
+      }
+
+      // Call the function to load all Pokémon
+      fetchAllPokemon();
+
+      // Event listener for input changes
+      pokemonSearch.addEventListener("input", async () => {
+        const query = pokemonSearch.value.toLowerCase();
+
+        if (query.length >= 3) {
+          const filteredPokemon = allPokemon.filter((name) =>
+            name.startsWith(query)
+          );
+          if (filteredPokemon.length > 0) {
+            pokemonInfo.innerHTML = ""; // Clear previous results
+
+            // Fetch details for each matching Pokémon
+            for (let name of filteredPokemon) {
+              try {
+                const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+                if (!response.ok) {
+                  throw new Error("Pokémon not found");
+                }
+                const pokemon = await response.json();
+                displayPokemonInfo(pokemon);
+              } catch (error) {
+                pokemonInfo.innerHTML = `<p>${error.message}</p>`;
+              }
+            }
+            showSlide(0); // Show the first slide by default
+          } else {
+            pokemonInfo.innerHTML = `<p>No Pokémon found for "${query}"</p>`;
+          }
+        } else {
+          pokemonInfo.innerHTML = "";
+        }
+      });
+
+      function displayPokemonInfo(pokemon) {
+        const pokemonElement = document.createElement("div");
+        pokemonElement.classList.add("pokemon-slide", "pokemon-card");
+        pokemonElement.innerHTML = `
+          <h2>${pokemon.name}</h2>
+          <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+          <p>Type: ${pokemon.types.map((type) => type.type.name).join(", ")}</p>
+          <p>Level: ${pokemon.base_experience}</p>
+          <button class="stats-button">Stats</button>
+          <button class="trade-button">Trade</button>
+        `;
+
+        // Add event listeners for both buttons
+        pokemonElement
+          .querySelector(".stats-button")
+          .addEventListener("click", () => openModal(pokemon, "stats"));
+        pokemonElement
+          .querySelector(".trade-button")
+          .addEventListener("click", () => openModal(pokemon, "trade"));
+
+        pokemonInfo.appendChild(pokemonElement);
+      }
+
+      function showSlide(index) {
+        const slides = document.getElementsByClassName("pokemon-slide");
+        if (slides.length > 0) {
+          if (index >= slides.length) {
+            currentSlideIndex = 0;
+          } else if (index < 0) {
+            currentSlideIndex = slides.length - 1;
+          } else {
+            currentSlideIndex = index;
+          }
+
+          for (let i = 0; i < slides.length; i++) {
+            slides[i].style.display = "none";
+          }
+          slides[currentSlideIndex].style.display = "block";
+        }
+      }
+
+      function openModal(pokemon, type) {
+        currentPokemon = pokemon; // Store the current Pokémon
+        document.getElementById("pokemon-img").src = pokemon.sprites.front_default;
+        document.getElementById("pokemon-name").textContent = pokemon.name;
+
+        const statsContent = document.getElementById("stats-content");
+        const tradeContent = document.getElementById("trade-content");
+
+        if (type === "stats") {
+          // Display stats information
+          document.getElementById("pokemon-type").textContent = pokemon.types
+            .map((type) => type.type.name)
+            .join(", ");
+          document.getElementById("pokemon-level").textContent =
+            pokemon.base_experience;
+          document.getElementById("pokemon-items").textContent =
+            pokemon.held_items.length > 0
+              ? pokemon.held_items.map((item) => item.item.name).join(", ")
+              : "None";
+          document.getElementById("pokemon-moves").textContent = pokemon.moves
+            .map((move) => move.move.name)
+            .join(", ");
+
+          const statsContainer = document.querySelector(".pokemon-stats");
+          statsContainer.innerHTML = "";
+          pokemon.stats.forEach((stat) => {
+            const statElement = document.createElement("div");
+            statElement.innerHTML = `<strong>${stat.stat.name}:</strong> ${stat.base_stat}`;
+            statsContainer.appendChild(statElement);
+          });
+
+          statsContent.style.display = "block";
+          tradeContent.style.display = "none";
+        } else if (type === "trade") {
+          // Display trade requirements
+          statsContent.style.display = "none";
+          tradeContent.style.display = "block";
+          
+          // Set a random Pokémon as the required Pokémon
+          const randomId = Math.floor(Math.random() * 898) + 1;
+          fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`)
+            .then(response => response.json())
+            .then(requiredPokemon => {
+              requiredPokemonNameElem.textContent = requiredPokemon.name;
+              requiredPokemonImgElem.src = requiredPokemon.sprites.front_default;
+            });
+
+          // Handle trade confirmation
+          confirmTradeBtn.onclick = () => {
+            console.log("Confirm trade button clicked");
+            console.log("Current Pokémon:", currentPokemon);
+            console.log("Required Pokémon:", randomId);
+            console.log("Required Pokémon:", pokemon.id);  
+            handleTrade(pokemon.id,randomId);
+
+          };
+        }
+
+        modal.style.display = "block";
+      }
+
+      function handleTrade(tradedPokemonId, requiredPokemonId) {
+        console.log("Current Pokémon:", tradedPokemonId);
+        console.log("Required Pokémon:", requiredPokemonId);  
+  // Retrieve the logged-in user data from local storage
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (!loggedInUser) {
+    alert("You must be logged in to trade.");
+    return;
+  }
+
+  const usersData = JSON.parse(localStorage.getItem("usersData"));
+  const user = usersData[loggedInUser.username];
+
+  // Check if the user has the required Pokémon
+  if (!user.collectedPokemon.includes(requiredPokemonId)) {
+    alert("You do not have the required Pokémon for this trade.");
+    return;
+  }
+
+  // Perform the trade
+  user.collectedPokemon = user.collectedPokemon.filter(id => id !== requiredPokemonId); // Remove required Pokémon
+  user.collectedPokemon.push(tradedPokemonId); // Add traded Pokémon
+
+  // Update local storage with the new collected Pokémon list
+  localStorage.setItem("usersData", JSON.stringify(usersData));
+
+  // Notify user of successful trade
+  alert("Trade successful!");
+
+  // Close the modal
+  modal.style.display = "none";
+}
+
+      // Stub for checking if the user has a Pokémon
+      function userHasPokemon(pokemonName) {
+        // Replace this with actual user data fetching logic
+        return new Promise((resolve) => resolve(true)); // Assuming the user always has the Pokémon
+      }
+
+      // Stub for trading Pokémon
+      function tradePokemon(pokemonToTrade, requiredPokemonName) {
+        // Replace this with actual trade logic
+        return new Promise((resolve) => resolve()); // Assuming trade is always successful
+      }
+
+      // When the user clicks on <span> (x), close the modal
+      span.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      // When the user clicks anywhere outside of the modal, close it
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      window.changeSlide = function (step) {
+        showSlide(currentSlideIndex + step);
+      };
+    });
+  </script>
+</body>
+</html>

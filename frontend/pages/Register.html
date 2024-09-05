@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../main/css/registerpage.css">
+   <script src="../main/js/register.js"></script>
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+   
+    <title>Register page </title>
+</head>
+<body>
+
+    
+
+    <div id="blah">
+    <form action="" method="post">
+       
+        <div class="headingsContainer">
+            <h3>Sign up</h3>
+            
+        </div>
+
+        <!-- Main container for all inputs -->
+        <div class="mainContainer">
+            <form id="registrationForm">
+            <!-- Username -->
+            <label for="email">Your email</label>
+            <input type="text" id="RegisterEmail" placeholder="Enter Email" name="email" required>
+            
+            <br><br>
+            <label for="username">Your username</label>
+            <input type="text" id="RegisterUsername" placeholder="Username" name="username" required>
+            <br><br>
+            <!-- Password -->
+            <label for="pswrd">Your password</label>
+            <input type="password" id="RegisterPassword" placeholder="Enter Password" name="pswrd" required>
+
+        
+
+
+             <!-- Submit button -->
+             <button  onclick="submitRegister()" type="button">Register</button>
+
+            </form>
+        </div>
+ </div>
+    </form>  
+
+
+</body>
+</html>

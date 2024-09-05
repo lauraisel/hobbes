@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="../main/css/home.css" />
+    <script
+      defer
+      src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"
+      integrity="sha384-rOA1PnstxnOBLzCLMcre8ybwbTmemjzdNlILg8O7z1lUkLXozs4DHonlDtnE7fpc"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="../main/js/nav.js"></script>
+
+    <style>
+      /* Centering the image and welcome box */
+      .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 50%;
+      }
+
+      .welcome-box {
+        background-color: #64b5f6;
+        color: #000;
+        padding: 20px;
+        border-radius: 10px;
+        width: 50%;
+        text-align: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* Styling the Daily Reward button */
+      .daily-reward {
+        position: absolute;
+        top: 20%;
+        right: 10%;
+        text-align: center;
+      }
+
+      .daily-reward button {
+        background-color: #ffcc00;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #000;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .daily-reward button img {
+        width: 30px;
+        height: auto;
+        margin-right: 10px;
+      }
+
+      .daily-reward button:hover {
+        background-color: #e6b800;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+      }
+
+      .modal-content {
+        background-color: #BFDCFA;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        border-radius: 10px;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .pokemon-card {
+        background-color: white;
+        display: inline-block;
+        width: 150px;
+        margin: 10px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .pokemon-card img {
+        width: 100px;
+        height: 100px;
+      }
+
+      .pokemon-card h3 {
+        font-size: 16px;
+        margin: 10px 0;
+      }
+
+      .pokemon-card p {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .collect-btn {
+        background-color: #28a745;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 20px 0;
+        cursor: pointer;
+        border-radius: 5px;
+        width: 100%;
+      }
+
+      .collect-btn:hover {
+        background-color: #218838;
+      }
+    </style>
+  </head>
+  <div id="navbar"></div>
+  <body>
+    <img
+      src="../images/All_Starter_Pokémon.webp"
+      width="40%"
+      height="40%"
+      class="center"
+    />
+    <div class="welcome-box">
+      Welcome to the Ultimate Pokémon Trading Hub! Dive into a vibrant community
+      of trainers where you can trade and collect your favorite Pokémon. Start
+      your journey today and complete your Pokédex by connecting with trainers
+      from around the globe. Whether you're searching for rare Pokémon or
+      looking to trade your extras, our platform makes it easy and fun. Join us
+      now and be part of the Pokémon trading revolution!
+    </div>
+    <div class="daily-reward">
+      <button id="dailyRewardBtn">
+        <img
+          src="../images/Gift-box-white-illustration-transparent-PNG.png"
+          alt="Daily Reward Icon"
+        />
+        Daily Reward
+      </button>
+    </div>
+
+    <!-- The Modal -->
+    <div id="dailyRewardModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Your Daily Pokémon Rewards</h2>
+        <div id="pokemonCardsContainer">
+          <!-- Pokémon cards will be injected here -->
+        </div>
+        <button id="collectBtn" class="collect-btn">Collect</button>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+      const modal = document.getElementById("dailyRewardModal");
+      const btn = document.getElementById("dailyRewardBtn");
+      const span = document.getElementsByClassName("close")[0];
+      const collectBtn = document.getElementById("collectBtn");
+      const dailyRewardWrapper = document.getElementById("dailyRewardWrapper");
+
+      function checkUserLogin() {
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedInUser) {
+          dailyRewardWrapper.style.display = "none";
+          return false;
+        }
+        return true;
+      }
+
+      function getLastRewardTime() {
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedInUser) return 0;
+
+        const userData = JSON.parse(localStorage.getItem("usersData")) || {};
+        return userData[loggedInUser.username]?.lastRewardTime || 0;
+      }
+
+      function setLastRewardTime() {
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedInUser) return;
+
+        let usersData = JSON.parse(localStorage.getItem("usersData")) || {};
+        if (!usersData[loggedInUser.username]) {
+          usersData[loggedInUser.username] = {};
+        }
+        usersData[loggedInUser.username].lastRewardTime = Date.now();
+        localStorage.setItem("usersData", JSON.stringify(usersData));
+      }
+
+      function canCollectReward() {
+        const lastRewardTime = getLastRewardTime();
+        const currentTime = Date.now();
+        const cooldown = 60 * 1000; // 1 minute cooldown
+        return currentTime - lastRewardTime >= cooldown;
+      }
+
+      function displayPokemon() {
+        const storedPokemon = localStorage.getItem("dailyPokemon");
+
+        if (storedPokemon) {
+          // If Pokémon are already stored, use them
+          const pokemonList = JSON.parse(storedPokemon);
+          renderPokemonCards(pokemonList);
+        } else {
+          // Otherwise, fetch new Pokémon and store them
+          getRandomPokemon().then((results) => {
+            localStorage.setItem("dailyPokemon", JSON.stringify(results));
+            renderPokemonCards(results);
+          });
+        }
+      }
+
+      function renderPokemonCards(pokemonList) {
+        const pokemonCardsContainer = document.getElementById("pokemonCardsContainer");
+        pokemonCardsContainer.innerHTML = ""; // Clear previous content
+
+        pokemonList.forEach((pokemon) => {
+          const pokemonCard = document.createElement("div");
+          pokemonCard.className = "pokemon-card";
+          pokemonCard.innerHTML = `
+            <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+            <h3>${pokemon.name}</h3>
+            <p>Level: ${pokemon.base_experience}</p>
+          `;
+          pokemonCardsContainer.appendChild(pokemonCard);
+        });
+      }
+
+      async function getRandomPokemon() {
+        const promises = [];
+        for (let i = 0; i < 6; i++) {
+          const randomId = Math.floor(Math.random() * 898) + 1; // Random Pokémon ID
+          promises.push(fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`).then(response => response.json()));
+        }
+
+        return Promise.all(promises);
+      }
+
+      function savePokemonForUser() {
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+        if (!loggedInUser) {
+          alert("No user is logged in. Please log in first.");
+          return;
+        }
+
+        const storedPokemon = localStorage.getItem("dailyPokemon");
+        if (storedPokemon) {
+          const pokemonList = JSON.parse(storedPokemon);
+          const collectedPokemonIds = pokemonList.map((pokemon) => pokemon.id);
+
+          let usersData = JSON.parse(localStorage.getItem("usersData")) || {};
+
+          if (!usersData[loggedInUser.username]) {
+            usersData[loggedInUser.username] = {
+              collectedPokemon: [],
+            };
+          }
+
+          // Add collected Pokémon IDs to the user's data
+          usersData[loggedInUser.username].collectedPokemon.push(...collectedPokemonIds);
+
+          // Save updated data back to local storage
+          localStorage.setItem("usersData", JSON.stringify(usersData));
+
+          // Clear the daily Pokémon from local storage to prevent collecting again
+          localStorage.removeItem("dailyPokemon");
+
+          // Update last reward time
+          setLastRewardTime();
+
+          alert("Pokémon collected successfully!");
+        }
+      }
+
+      btn.onclick = function () {
+        if (canCollectReward()) {
+          modal.style.display = "block";
+          displayPokemon();
+        } else {
+          alert("You need to wait before collecting the daily reward again.");
+        }
+      };
+
+      span.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      collectBtn.onclick = function () {
+        savePokemonForUser();
+        modal.style.display = "none";
+      };
+
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      // Initial check to display the button if the user is logged in
+      checkUserLogin();
+    });
+    </script>
+  </body>
+</html>
