@@ -20,8 +20,5 @@ public class AuthenticateRequestDto {
     @NotBlank(message = "Password cannot be blank")
     @Size(min = 8, message = "Password should have a minimum of 8 characters")
     private String password;
-    @Email(message = "Incorrect email format")
-    @NotEmpty(message = "Email cannot be empty")
-    @NotBlank(message = "Email cannot be blank")
-    private String email;
+
 }
