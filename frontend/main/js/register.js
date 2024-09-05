@@ -16,8 +16,10 @@ function submitRegister() {
 
   fetch("http://localhost:8088/api/v1/auth/register", {
     method: "POST",
+    //mode: "no-cors",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": 'application/json',
+      "Access-Control-Allow-Origin" : ""
     },
     body: JSON.stringify({
       username: userData.username,
@@ -63,5 +65,5 @@ function submitRegister() {
     alert("Registration successful! Please log in.");
 
     // Redirect to the login page
-    window.location.href = "login.html";
+    //window.location.href = "login.html";
 }
