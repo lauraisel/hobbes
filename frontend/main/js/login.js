@@ -1,33 +1,43 @@
 function submitLogin(){
-
-
 //this is what user needs to enter
 var requestData = {
-    username: document.getElementById("LogInUsername").value,
+    email: document.getElementById("LogInEmail").value,
     password: document.getElementById("LogInPassword").value
 }
 
 // if log in is successful the user will be redirected to home page if not the error will occure
-/*$.ajax({
-    type: 'POST',
-    url: 'https://www.fulek.com/data/api/user/login',
-    contentType: 'application/json ; charset=utf-8',
-    dataType: 'json',
-    data:
-    JSON.stringify(requestData),
-    success: function(response){
-        var token = response.data.token;
-        localStorage.setItem('token', token);
-
-        alert("Login successful!");
-       
-        window.location.href = "\Home.html";
+fetch("http://localhost:8088/api/v1/auth/authentication", {
+    method: "POST",
+    //mode: "no-cors",
+    headers: {
+      "Content-Type": 'application/json',
+      
     },
-    error: function(error){
-        console.log("Error at login: ", error);
+    body: JSON.stringify({
+      email: requestData.email,
+      password: requestData.password
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Login failed");
     }
-});
-}*/
+    return response.json();
+  })
+  .then(data => {
+    console.log("User logged in successfully:", data);
+
+    
+    //alert("Login successful!");
+
+    
+    window.location.href = "Home.html";
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    
+  });
+
 let usersData = JSON.parse(localStorage.getItem("usersData")) || {};
 
     // Check if the username exists and if the password matches

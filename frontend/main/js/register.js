@@ -37,10 +37,10 @@ function submitRegister() {
     console.log("User registered successfully:", data);
 
     
-    alert("Registration successful! Please log in.");
+    //alert("Registration successful! Please authenticate.");
 
     
-    window.location.href = "login.html";
+    window.location.href = "Auth.html";
   })
   .catch(error => {
     console.error("Error:", error);
@@ -62,8 +62,8 @@ function submitRegister() {
     localStorage.setItem("usersData", JSON.stringify(usersData));
 
     // Notify user of successful registration
-    alert("Registration successful! Please log in.");
+    alert("Registration successful! Please authenticate.");
 
     // Redirect to the login page
-    //window.location.href = "login.html";
+    window.location.href = "Auth.html";
 }
