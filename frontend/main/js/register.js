@@ -13,25 +13,36 @@ function submitRegister() {
     collectedPokemon: [] // Initialize with an empty array for collected Pokémon
   };
 
-  // Make AJAX request
-$.ajax({
-    type: "POST",
-    url: "http://localhost:8088/api/v1/auth/register",
-    contentType: "application/json",
-    data: JSON.stringify(DBData),
-    success: function (response) {
-      // Handle success
-      console.log("User registered successfully:", response);
-      
-      
+
+  fetch("http://localhost:8088/api/v1/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
     },
-    error: function (error) {
-      // Handle error
-      console.error("Registration failed:", error);
-      
-      // Notify user of registration failure
-      alert("Registration failed. Please try again.");
-    },
+    body: JSON.stringify({
+      username: userData.username,
+      email: userData.email,
+      password: userData.password
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Registration failed");
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log("User registered successfully:", data);
+
+    
+    alert("Registration successful! Please log in.");
+
+    
+    window.location.href = "login.html";
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    
   });
 
   let usersData = JSON.parse(localStorage.getItem("usersData")) || {};
