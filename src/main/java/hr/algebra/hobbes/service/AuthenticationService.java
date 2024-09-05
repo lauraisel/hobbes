@@ -94,7 +94,7 @@ public class AuthenticationService {
     public AuthenticateResponseDto authenticate(AuthenticateRequestDto request) {
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
+                        request.getEmail(),
                         request.getPassword()
                 )
         );

@@ -13,10 +13,10 @@ import lombok.Setter;
 @Builder
 public class AuthenticateRequestDto {
 
-    @NotEmpty(message = "Username cannot be empty")
-    @NotBlank(message = "Username cannot be blank")
-    private String username;
-    @NotEmpty(message = "Password cannot be empty")
+    @Email(message = "Incorrect email format")
+    @NotEmpty(message = "Email cannot be empty")
+    @NotBlank(message = "Email cannot be blank")
+    private String email;    @NotEmpty(message = "Password cannot be empty")
     @NotBlank(message = "Password cannot be blank")
     @Size(min = 8, message = "Password should have a minimum of 8 characters")
     private String password;
