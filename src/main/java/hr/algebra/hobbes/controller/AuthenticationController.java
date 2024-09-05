@@ -1,5 +1,7 @@
 package hr.algebra.hobbes.controller;
 
+import hr.algebra.hobbes.dto.AuthenticateRequestDto;
+import hr.algebra.hobbes.dto.AuthenticateResponseDto;
 import hr.algebra.hobbes.dto.RegistrationRequestDto;
 import hr.algebra.hobbes.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,4 +28,20 @@ public class AuthenticationController {
         authenticationService.register(request);
         return ResponseEntity.accepted().build();
     }
+
+    @PostMapping("/authenticate")
+    public ResponseEntity<AuthenticateResponseDto> authenticate(
+            @RequestBody AuthenticateRequestDto request
+    ){
+        return ResponseEntity.ok(authenticationService.authenticate(request));
+
+    }
+
+    @GetMapping("/activate-account")
+    public void confirm(
+            @RequestParam String token
+    ) throws MessagingException {
+        authenticationService.activateAccount(token);
+    }
+
 }
