@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hobbes_the_project
+    username: username
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  mail:
+    host: smtp.gmail.com
+    username: hobbes.theproject@gmail.com
+    password: aifz vmcx hvbi qgim
+    port: 587
+    properties:
+      smtp:
+        auth: true
+        connectiontimeout: 5000
+        starttls:
+          enable: true
+          required: true
+        timeout: 5000
+        writetimeout: 5000
+
+application:
+  security:
+    jwt:
+      secret-key: VCp9F7wWw/kq9RNZhq4aEim47L4hPJtsA+lpCWOqPdjUjwO/2PQtNbuY5pzEhJY9
+      expiration: 900000
+  mailing:
+    frontend:
+      activation-url: http://localhost:4200/activate-account
+server:
+  port: 8088
